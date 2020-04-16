@@ -2,6 +2,8 @@ apiVersion: apps/v1 #  for k8s versions before 1.9.0 use apps/v1beta2  and befor
 kind: Deployment
 metadata:
   name: frontend
+  annotations:
+    fluxcd.io/automated: "true" #automate the deployments
 spec:
   selector:
     matchLabels:
@@ -16,7 +18,7 @@ spec:
     spec:
       containers:
       - name: php-redis
-        image: anitab/guestbook-btn:btn-large
+        image: anitab/guestbook-btn:btn-block
         resources:
           requests:
             cpu: 100m
