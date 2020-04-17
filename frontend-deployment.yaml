@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
       - name: php-redis
-        image: anitab/guestbook-btn:btn-block
+        image: anitab/guestbook-btn:btn-large
         resources:
           requests:
             cpu: 100m
