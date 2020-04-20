@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
       - name: php-redis
-        image: 450820360611.dkr.ecr.us-east-1.amazonaws.com/guestbook
+        image: 450820360611.dkr.ecr.us-east-1.amazonaws.com/guestbook:warning
         resources:
           requests:
             cpu: 100m
