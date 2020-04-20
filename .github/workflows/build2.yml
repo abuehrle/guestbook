@@ -9,7 +9,7 @@ on:
     branches:         # array of glob patterns matching against refs/heads. Optional; defaults to all
     - master          # triggers on pushes that contain changes in master
 
-name: Build and Push to ECR
+name: Build an image and push it to ECR
 
 # https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html
 env:
