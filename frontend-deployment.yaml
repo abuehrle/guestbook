@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
       - name: php-redis
-        image: 450820360611.dkr.ecr.us-east-1.amazonaws.com/guestbook:bb394d283e5632e8d7a3fb6928124610a532da49
+        image: anitab/guestbook-btn
         resources:
           requests:
             cpu: 100m
