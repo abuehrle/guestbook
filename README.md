@@ -1,7 +1,7 @@
 
 # Building a Continuous Deployment GitOps Pipeline to EKS
 
-This tutorial describes how to set up a basic GitOps deployment pipeline with Flux and GitHub actions. It uses the Kubernetes Guestbook application and also adapts a [GitHub Actions pipeline](https://github.com/github-developer/example-actions-flux-eks) originally developed by Jeremy Adams - @jpadamspdx and John Bohannon - @imjohnbo of GitHub.  
+This tutorial describes how to set up a basic GitOps deployment pipeline with Flux and GitHub actions. It uses the Kubernetes Guestbook application and also adapts a [GitHub Actions pipeline](https://github.com/github-developer/example-actions-flux-eks) originally developed by Jeremy Adams and John Bohannon of GitHub.  
 
 ## What do we need for GitOps on AWS?
 
@@ -206,14 +206,14 @@ AWS_SECRET_ACCESS_KEY
 
 The secret access key is found on your AWS account ID and is obtainable from the AWS console or by running `aws sts get-caller-identity` and the new user’s key ID and the secret key (found in your `~/.aws/credentials` file). 
 
-![Image Secrets ECR](images/secrets-ecr.png)
+![](images/secrets-ecr.png)
 
 **Reorient Flux to watch the ECR repository**
 
 Update the front-end manifest to point to the URI of your ECR registry.  
 You can find the URI next to the repository name in the ECR console in AWS Services. 
 
-![ECR URI](images/ECR-URI.png)
+![](images/ECR-URI.png)
 
 Open the `frontend-deployment.yaml` file and replace line 22 with the URl from your ECR repository.  After you’ve made the change, commit and push the file to Git. 
 
@@ -233,7 +233,7 @@ To:
  
 After you’ve made the update, `git add`, `git commit` and `git push` the change.  Click on the **Actions** tab to watch the pipeline test and build the image. 
 
-![Github Actions Pipeline](images/github-actions-pipeline.png)
+![](images/github-actions-pipeline.png)
 
 
 Once the image is pushed to ECR, Flux notices it and automatically deploys the image to EKS.  To see this right away, sync Flux with the repo: 
