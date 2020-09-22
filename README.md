@@ -115,7 +115,7 @@ Before Flux can update and check the manifests back into Git, get Flux’s publi
 
 Paste the key that appears in your forked Guestbook repo by selecting **Settings → Deploy Keys** from GitHub. Ensure that you enable **Allow write** access.
 
-![Image Deploy Keys](./images/deploy-keys.png)
+![Image Deploy Keys](images/deploy-keys.png)
 
 Flux by default polls the image repo for new images every 5 minutes. Force a sync by running: 
 
