@@ -1,7 +1,7 @@
 
 # Building a Continuous Deployment GitOps Pipeline to EKS
 
-This tutorial describes how to set up a basic GitOps deployment pipeline with Flux and GitHub actions. It uses the Kubernetes Guestbook application and also adapts a GitHub Actions pipeline originally developed by @Jeremy Adams of GitHub.  
+This tutorial describes how to set up a basic GitOps deployment pipeline with Flux and GitHub actions. It uses the Kubernetes Guestbook application and also adapts a [GitHub Actions pipeline](https://github.com/github-developer/example-actions-flux-eks) originally developed by Jeremy Adams - @jpadamspdx and John Bohannon - @imjohnbo of GitHub.  
 
 ## What do we need for GitOps on AWS?
 
@@ -115,7 +115,7 @@ Before Flux can update and check the manifests back into Git, get Flux’s publi
 
 Paste the key that appears in your forked Guestbook repo by selecting **Settings → Deploy Keys** from GitHub. Ensure that you enable **Allow write** access.
 
-![Image Deploy Keys](images/deploy-keys.png)
+![](images/deploy-keys.png)
 
 Flux by default polls the image repo for new images every 5 minutes. Force a sync by running: 
 
