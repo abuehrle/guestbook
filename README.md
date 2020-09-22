@@ -115,7 +115,7 @@ Before Flux can update and check the manifests back into Git, get Flux’s publi
 
 Paste the key that appears in your forked Guestbook repo by selecting **Settings → Deploy Keys** from GitHub. Ensure that you enable **Allow write** access.
 
-![Deploy-Keys](images/deploy-keys.png)
+![Deploy-Keys](Images/deploy-keys.png)
 
 Flux by default polls the image repo for new images every 5 minutes. Force a sync by running: 
 
@@ -206,14 +206,14 @@ AWS_SECRET_ACCESS_KEY
 
 The secret access key is found on your AWS account ID and is obtainable from the AWS console or by running `aws sts get-caller-identity` and the new user’s key ID and the secret key (found in your `~/.aws/credentials` file). 
 
-![secrets-ecr](images/secrets-ecr.png)
+![secrets-ecr](Images/secrets-ecr.png)
 
 **Reorient Flux to watch the ECR repository**
 
 Update the front-end manifest to point to the URI of your ECR registry.  
 You can find the URI next to the repository name in the ECR console in AWS Services. 
 
-![ecr-uri](images/ECR-URI.png)
+![ecr-uri](Images/ECR-URI.png)
 
 Open the `frontend-deployment.yaml` file and replace line 22 with the URl from your ECR repository.  After you’ve made the change, commit and push the file to Git. 
 
@@ -233,7 +233,7 @@ To:
  
 After you’ve made the update, `git add`, `git commit` and `git push` the change.  Click on the **Actions** tab to watch the pipeline test and build the image. 
 
-![github-actions](images/github-actions-pipeline.png)
+![github-actions](Images/github-actions-pipeline.png)
 
 
 Once the image is pushed to ECR, Flux notices it and automatically deploys the image to EKS.  To see this right away, sync Flux with the repo: 
