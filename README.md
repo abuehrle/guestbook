@@ -25,7 +25,7 @@ You will need to sign up for the following services:
 
 * AWS account  with the ability to create EKS clusters
 * GitHub account
-* ECR Container Registry
+* ECR Container Registry (we'll step through this below)
 
 In this example, you will install the standard [Guestbook sample application](https://kubernetes.io/docs/tutorials/stateless-application/guestbook/) to EKS. Then you’ll make a change to the look of the buttons and deploy it to EKS with GitOps.
 
@@ -73,7 +73,10 @@ kube-system   kube-proxy-nxf4n           1/1     Running   0          20m
 
 3. Install Flux
 
-Next, set up and install Flux and connect it to your repo.  Once complete, this will deploy the application to the cluster. 
+Next, set up and install Flux and connect it to your repo.  Once complete, this will automatically deploy the application to the cluster. However, since we haven’t set the URI for container registry in the frontend manifest, the Guestbook UI will not be deployed. You’ll do that in the next section. 
+
+**Note**: This example demonstrates how to install a stand-alone version of Flux. If you want to use Helm, you can also install Flux and Helm with eksctl, see [eksctl and GitOps for instructions](https://eksctl.io/usage/gitops/).  
+
 
 * Flux needs its own namespace. Create one with: 
 
@@ -117,11 +120,7 @@ Paste the key that appears in your forked Guestbook repo by selecting **Settings
 
 ![Deploy-Keys](Images/deploy-keys.png)
 
-Flux by default polls the image repo for new images every 5 minutes. Force a sync by running: 
-
-`fluxctl sync --k8s-fwd-ns flux`
-
-If you’ve set everything up correctly, after a few minutes you should begin to see the Guestbook app deploying and running in the cluster.  Check that by running: 
+If you’ve set everything up correctly, after a few minutes you should begin to the redis servers deploying and running in the cluster.  Check that with:  
 
 `kubectl get pods -A`
 
@@ -129,9 +128,6 @@ Where you should see something like the following:
 
 ```
 NAMESPACE     NAME                            READY   STATUS    RESTARTS   AGE
-default       frontend-d6f9889c-c6bhf         1/1     Running   0          9m33s
-default       frontend-d6f9889c-m8jpd         1/1     Running   0          9m33s
-default       frontend-d6f9889c-vjbv8         1/1     Running   0          9m33s
 default       redis-master-545d695785-cjnks   1/1     Running   0          9m33s
 default       redis-slave-84548fdbc-kbnj      1/1     Running   0          9m33s
 default       redis-slave-84548fdbc-tqf52     1/1     Running   0          9m33s
@@ -155,26 +151,35 @@ To see all of the commands you can run with fluxctl, for example, listing availa
 
 `fluxctl --help`
 
-5. Display the Guestbook application
+### Part 3: Setup GitHub Actions Workflow and connect to ECR container registry
 
-Retrieve a URL from the app running in the cluster with: 
+In this section we will set up an ECR container registry and a mini CI pipeline with GitHub Actions.  The actions build a new container on a `git push` and push it to the ECR registry.  Once the new image is in the repository, and the URL for the manifest is setup, Flux does two things: 
 
-`kubectl get service frontend`
+1. Updates the deployment manifest to point to the new image tag;  
+2. Delivers the new manifest to the cluster.  
 
-The response should be similar to this:
+
+1. Open an ECR (Elastic Container Registry) account
+
+Open an [ECR account](https://aws.amazon.com/ecr/) in the same region that your cluster is running.  You can call the repository guestbook. 
+
+2. Specify secrets for ECR
+
+ECR is an encrypted repository and as a result any images pulled to and from it need to be authenticated.  You can specify secrets for ECR in the Settings→ Secrets tab on your forked guestbook repository. 
+
+Create the following three secrets:
+
+```
+AWS_ACCOUNT_ID
+AWS_ACCESS_KEY_ID
+AWS_SECRET_ACCESS_KEY
 ```
 
-  NAME       TYPE        CLUSTER-IP      EXTERNAL-IP        PORT(S)        AGE
-  frontend   ClusterIP   10.51.242.136   109.197.92.229     80:32372/TCP   1m
-```
+The secret access key is found on your AWS account ID and is obtainable from the AWS console or by running aws sts get-caller-identity and the new user’s key ID and the secret key (found in your `~/.aws/credentials file`). 
 
-The initial frontend image was pulled from Google’s image registry.  In this next section, you’ll make a change to the UI, run the change through the GitHub actions pipeline to build a new image and push it to the ECR repository.  Flux will notice the new image in the ECR repository and deploy it to the cluster and update the associated manifest for you. 
+![secrets-ecr](Images/secrets-ecr.png)
 
-## Part 3: Setup GitHub Actions Workflow and connect to ECR container registry
-
-In this section we will set up a mini CI pipeline with GitHub Actions.  The actions build a new container on a `git push` and then pushes it to the ECR registry.  Once the new image is in the repository, Flux will automatically deploy the image and its change to the cluster.  
-
-1. Setup the GitHub actions workflow
+3. Configure the GitHub actions workflow
 
 View the workflow in your repo under `.github/workflows/main.yml`. Make sure you have the environment variables on lines 16-20 set up properly.
 
@@ -186,72 +191,78 @@ View the workflow in your repo under `.github/workflows/main.yml`. Make sure you
 20 AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 ```
 
-Ensure that line 16 has the region where your EKS cluster resides. This should match the region in your `~/.aws/config` or the region you specified when you ran `aws configuration`.
+Ensure that line 16 is set to the region where your EKS cluster resides. This should match the region in your ~/.aws/config or the region you specified when you ran `aws configuration`.
 
-Open an ECR (Elastic Container Registry) account
-
-Open an [ECR account](https://aws.amazon.com/ecr/) in the same region that your cluster is running.  You can call the repository guestbook. 
-
-2. Specify secrets for ECR
-
-ECR is an encrypted repository and as a result any images pulled to and from it need to be authenticated.  You can specify secrets for ECR in the **Settings--> Secrets** tab on your forked guestbook repository. 
-
-Create the following three secrets:  
-
-```
-AWS_ACCOUNT_ID
-AWS_ACCESS_KEY_ID
-AWS_SECRET_ACCESS_KEY
-```
-
-The secret access key is found on your AWS account ID and is obtainable from the AWS console or by running `aws sts get-caller-identity` and the new user’s key ID and the secret key (found in your `~/.aws/credentials` file). 
-
-![secrets-ecr](Images/secrets-ecr.png)
-
-**Reorient Flux to watch the ECR repository**
-
-Update the front-end manifest to point to the URI of your ECR registry.  
-You can find the URI next to the repository name in the ECR console in AWS Services. 
-
-![ecr-uri](Images/ECR-URI.png)
-
-Open the `frontend-deployment.yaml` file and replace line 22 with the URl from your ECR repository.  After you’ve made the change, commit and push the file to Git. 
-
-
-**Make a change to the app and then `git push`** 
+4. Make a change to the app and then `git push`
 
 Let’s make a simple change to the buttons on the app and push it to Git: 
 
-Open the `index.html` and change line 15: 
+Open the `index.html` file and change line 15: 
 
-`<button type="button" class="btn btn-primary btn-lg" ng-click="controller.onRedis()">Submit</button>`
-
+```
+<button type="button" class="btn btn-primary btn-lg" ng-click="controller.onRedis()">Submit</button>
+```
 To: 
+```
+<button type="button" class="btn btn-primary btn-lg btn-block" ng-click="controller.onRedis()">Submit</button>
+```
 
-`<button type="button" class="btn btn-primary btn-lg btn-block" ng-click="controller.onRedis()">Submit</button>`
+We’ll need to push an initial image to the repository and get a URI with an image to set up Flux.  Once you’ve made the change to the buttons do a, `git add`, `git commit` and `git push` the change.  Click on the Actions tab to watch the pipeline test and build the image. 
+
+![Actions-pipeline](Images/actions-pipeline.png)
+
+5. Update the frontend-deployment manifest 
+
+Update the front-end manifest to point to the initial image URI in your guestbook ECR registry.  
+
+You can find the URI and an initial tag from your newly pushed image by clicking on the repository name: 
+
+![ECR-URI](Images/ECR-URI.png)
+
+Open the `frontend-deployment.yaml` file and add the Image URI from your ECR registry on line 22.  
 
  
-After you’ve made the update, `git add`, `git commit` and `git push` the change.  Click on the **Actions** tab to watch the pipeline test and build the image. 
+After you’ve made an update to the manifest, `git add`, `git commit` and `git push` the change. 
 
-![github-actions](Images/github-actions-pipeline.png)
-
-
-Once the image is pushed to ECR, Flux notices it and automatically deploys the image to EKS.  To see this right away, sync Flux with the repo: 
+ To see the change immediately, sync Flux with the updated repo: 
 
 `fluxctl sync --k8s-fwd-ns flux`
 
-And now check to see that the new image is deploying: 
+And check to see that the new image is deploying: 
 
 `kubectl get pods -A`
+```
+NAMESPACE     NAME                            READY   STATUS    RESTARTS   AGE
+default       frontend-6f9b84d75d-g48hf       1/1     Running   0          95s
+default       frontend-6f9b84d75d-ncqj6       1/1     Running   0          84s
+default       frontend-6f9b84d75d-v5pfs       1/1     Running   0          107s
+default       redis-master-545d695785-r8ckm   1/1     Running   0          58m
+default       redis-slave-84548fdbc-nk4mf     1/1     Running   0          58m
+default       redis-slave-84548fdbc-vvmws     1/1     Running   0          58m
+flux          flux-75888db95c-pnztj           1/1     Running   0          61m
+flux          memcached-86869f57fd-hhqnk      1/1     Running   0          61m
+kube-system   aws-node-bcw7j                  1/1     Running   0          67m
+kube-system   aws-node-gt52t                  1/1     Running   0          67m
+kube-system   coredns-6f6c47b49d-57w8q        1/1     Running   0          74m
+kube-system   coredns-6f6c47b49d-k2dc5        1/1     Running   0          74m
+kube-system   kube-proxy-mgzwv                1/1     Running   0          67m
+kube-system   kube-proxy-pxbfk                1/1     Running   0          67m
+```
+ 
+6. Display the Guestbook application
 
-And finally, refresh the page with the Guestbook running in it to see your new button displayed.  
+Display the Guestbook frontend in your browser by retrieving the URL from the app running in the cluster with: 
+
+`kubectl get service frontend`
+
+The response should be similar to this:
+```
+  NAME       TYPE        CLUSTER-IP      EXTERNAL-IP        PORT(S)        AGE
+  frontend   ClusterIP   10.51.242.136   109.197.92.229     80:32372/TCP   1m
+```
+Now that you have Flux set up, you can keep making changes to the UI, and run the change through GitHub Actions to build and push new images to ECR. Flux will automatically update the manifest with the new image tag and deploy the new image with your changes to your cluster and ramp up your software development into overdrive. 
 
 ## Cleaning up
-
 To delete the cluster, run: 
 
 `eksctl delete cluster --name [name of your cluster]`
-
-
-
-
