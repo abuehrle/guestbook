@@ -9,7 +9,9 @@ resources:
 - redis-slave-service.yaml
 
 images:
+- name: frontend
+  newName: guestbook
+  newTag: 3fa38b9d2acb82a6e567c5935d1037a1339e4f1d
 - name: guestbook
-  newName: guestbook 
+  newName: guestbook
   newTag: new
-
