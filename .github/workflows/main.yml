@@ -43,7 +43,26 @@ jobs:
         docker build \
           -t $CONTAINER_IMAGE \
           -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$CONTAINER_IMAGE ./php-redis
-           
+ 
+    # Set image tag in kustomization
+
+    - name: Set image tag
+      run: |
+          cd deploy
+          kustomize edit set image frontend=${{ steps.image.outputs.IMG }}
+          cat kustomization.yaml
+    - name: Commit kustomization
+      run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git commit -a -m "${{ steps.image.outputs.IMG }}"
+    - name: Push changes to master
+      uses: ad-m/github-push-action@master
+      with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: master
+          force: true       
+    
     # Add additional steps here like scanning of image
 
     # Only push to registry on master
