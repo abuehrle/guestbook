@@ -49,7 +49,7 @@ jobs:
     - name: Set image tag
       run: |
           cd deploy
-          kustomize edit set image frontend=${{ steps.image.outputs.IMG }}
+          kustomize edit set image frontend=$CONTAINER_IMAGE
           cat kustomization.yaml
     - name: Commit kustomization
       run: |
