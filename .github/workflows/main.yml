@@ -49,7 +49,7 @@ jobs:
     - name: Set image tag
       run: |
           cd deploy
-          kustomize edit set image frontend=$CONTAINER_IMAGE
+          kustomize edit set image $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/guestbook=$CONTAINER_IMAGE
           cat kustomization.yaml
     - name: Commit kustomization
       run: |
