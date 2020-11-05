@@ -3,6 +3,8 @@
 
 This tutorial describes how to set up a basic GitOps deployment pipeline with Flux and GitHub actions. It uses the Kubernetes Guestbook application and also adapts a [GitHub Actions pipeline](https://github.com/github-developer/example-actions-flux-eks) originally developed by Jeremy Adams and John Bohannon of GitHub.  
 
+**Note:** This tutorial is now updated with Flux version 2.  You can find instructions for that [here](https://github.com/weaveworks/guestbook-gitops) 
+
 ## What do we need for GitOps on AWS?
 
 These are the tools that you’ll be working with in order to create a basic GitOps pipeline for application deployments or even for cluster components. If running this in production, you might also need an additional component to scan your base images for added security. 
